@@ -1,11 +1,32 @@
 <!DOCTYPE html>
 <html>
+    <script src="{{url_for('static', filename='game.js')}}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css')}}">
     <head>
+
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width" />
-        <title>Cum onlime</title>
+        <title>Cum online</title>
     </head>
     <body>
-        <h1>Cum online</h1>
+        <h1>CUM ONLINE</h1>
+        <h2 id="points">Points: 0</h2>
+
+        <button onclick="main()", id="click">Click!</button>
+        <div class="stats">
+            <h2>Stats</h2>
+            <p id="prSecond">Per second: 0</p>
+            <p id="perclick">Per click 1</p>
+            </div>
+
+
+        <h2>Upgrade shop</h2>
+
+        <div class="upgrades">
+        <button class="button", id="upgrade1", onclick="upgrade()">upgrade: per click stat - price: 10</button>
+        <button class="button", id="upgrade2", onclick="autoupgrade()">upgrade: auto income - price: 100</button>
+        </div>
+        <p id="error"></p>
+        
     </body>
 </html>
