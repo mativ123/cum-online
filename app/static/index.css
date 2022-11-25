@@ -10,6 +10,18 @@
     width: 400px;
     display: block;
   }
+
+  .tab{
+    display:inline-block;
+    font-size: 14px;
+    font-weight: bolder;
+  }
+
+  .header{
+    text-align: left;
+    padding: 1px;
+    background-color: gray;
+  }
   
   .upgrades .button:not(:last-child) {
     border-bottom: none; /* Prevent double borders */
