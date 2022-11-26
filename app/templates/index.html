@@ -1,5 +1,6 @@
-<!DOCTYPE html>
-<html>
+{% extends "base.html" %}
+
+{% block content %}
     <script src="{{url_for('static', filename='game.js')}}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='index.css')}}">
     <head>
@@ -21,8 +22,7 @@
             <h2>Stats</h2>
             <p id="prSecond">Per second: 0</p>
             <p id="perclick">Per click 1</p>
-            </div>
-
+        </div>
 
         <h2>Upgrade shop</h2>
 
@@ -38,5 +38,10 @@
         <div class="upgrades">
         <button class="button", id="bonus1", onclick="doubleclick()">2x clickpower - price 550</button>
         </div>
+            <button class="button", id="upgrade1", onclick="upgrade()">upgrade: per click stat - price: 10</button>
+            <button class="button", id="upgrade2", onclick="autoupgrade()">upgrade: auto income - price: 100</button>
+            <button class="button", id="upgrade3", onclick="aUpgrade2()">upgrade: better auto income - price 3000</button>
+        </div>
+        <p id="error"></p>
     </body>
-</html>
+{% endblock %}
