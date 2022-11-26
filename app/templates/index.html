@@ -7,10 +7,14 @@
 
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width" />
+        <div class="header">
+        <p class="tab">|    Cumgame |</p>
+        <p class="tab">test |</p>
+        </div>
         <title>Cum online</title>
     </head>
     <body>
-        <h1>CUM ONLINE</h1>
+        <h1 style="text-align: center;">CUM ONLINE</h1>
         <h2 id="points">Points: 0</h2>
 
         <button onclick="main()", id="click">Click!</button>
@@ -23,6 +27,17 @@
         <h2>Upgrade shop</h2>
 
         <div class="upgrades">
+        <button class="button", id="upgrade1", onclick="upgrade()">upgrade: per click stat - price: 10</button>
+        <button class="button", id="upgrade2", onclick="autoupgrade()">upgrade: auto income(1) - price: 100</button>
+        <button class="button", id="upgrade3", onclick="aUpgrade2()">upgrade: better auto income(10) - price: 3000</button>
+        <button class="button", id="upgrade4", onclick="aUpgrade3()">upgrade: better auto income(100) - price: 10000</button>
+        </div>
+        <p id="error"></p>
+        
+        <h2>bonus shop</h2>
+        <div class="upgrades">
+        <button class="button", id="bonus1", onclick="doubleclick()">2x clickpower - price 550</button>
+        </div>
             <button class="button", id="upgrade1", onclick="upgrade()">upgrade: per click stat - price: 10</button>
             <button class="button", id="upgrade2", onclick="autoupgrade()">upgrade: auto income - price: 100</button>
             <button class="button", id="upgrade3", onclick="aUpgrade2()">upgrade: better auto income - price 3000</button>
