@@ -1,26 +1,34 @@
-from flask import render_template, flash, redirect, url_for, request
+from flask import render_template, flash, redirect, url_for, request, jsonify
 from app import app, db
 from app.forms import LoginForm, RegistrationForm
 from flask_login import current_user, login_user, logout_user, login_required
 from app.models import User
 from werkzeug.urls import url_parse
+from dataclasses import dataclass
+import threading
+
+@dataclass
+class upgrades:
+    n: int
+    per: float
+    baseprice: int
+    pricescale: float
+
+    def calcPrice(self):
+        return self.baseprice * self.pricescale ** self.n
+
+click1 = upgrades(0, 1, 10, 1.1)
+click2 = upgrades(0, 10, 100, 1.1)
+
+auto1 = upgrades(0, 1, 100, 1.2)
+auto2 = upgrades(0, 10, 3000, 1.5)
+points = 0
 
 @app.route('/')
-@app.route('/index')
+@app.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
-    user = {'username': 'bigbusta'}
-    posts = [
-        {
-            'author': {'username': 'din'},
-            'body':   'Din mor'
-        },
-        {
-            'author': {'username': 'mor'},
-            'body':   'Din mor'
-        }
-    ]
-    return render_template('index.html', title='Home', posts=posts)
+    return render_template('index.html', title='Home')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -57,3 +65,45 @@ def register():
         flash('You are now registered')
         return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
+
+@app.route('/api/update')
+def updateData():
+    return jsonify({
+        "points":    points,
+        "click1p":   click1.calcPrice(),
+        "click2p":   click2.calcPrice(),
+        "auto1p":    auto1.calcPrice(),
+        "auto2p":    auto2.calcPrice(),
+        "perClick":  click1.n * click1.per + click2.n * click2.per + 1,
+        "perSecond": auto1.n * auto1.per + auto2.n * auto2.per,
+    })
+
+@app.route('/api/click', methods=['POST'])
+def click():
+    global points
+    points += click1.n * click1.per + click2.n * click2.per + 1
+    return jsonify({'success': True})
+
+@app.route('/api/upgrade', methods=['POST'])
+def upgrade():
+    global points
+    print(request.json['n'])
+    if request.json['n'] == 0 and points >= click1.calcPrice():
+        points -= click1.calcPrice()
+        click1.n += 1
+    elif request.json['n'] == 1 and points >= click2.calcPrice():
+        points -= click2.calcPrice()
+        click2.n += 1
+    elif request.json['n'] == 2 and points >= auto1.calcPrice():
+        points -= auto1.calcPrice()
+        auto1.n += 1
+    elif request.json['n'] == 3 and points >= auto2.calcPrice():
+        points -= auto2.calcPrice()
+        auto2.n += 1
+    return jsonify({'success': True})
+
+@app.route('/api/auto', methods=['POST'])
+def auto():
+    global points
+    points += auto1.n * auto1.per + auto2.n * auto2.per
+    return jsonify({'success': True})

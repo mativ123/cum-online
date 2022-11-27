@@ -1,4 +1,4 @@
-var point = 10000;
+var point = 0;
 
 var upgrades = {
     click1: {
@@ -33,82 +33,59 @@ var upgrades = {
         button: "auto2",
     },
 };
-
-var clickList = [upgrades.click1, upgrades.click2];
-var autoList = [upgrades.auto1, upgrades.auto2];
-
-const calcPrice = (upgrade) => upgrade.baseprice * Math.pow(upgrade.pricescale, upgrade.n);
-
-function calcPer(obj)
+async function httpGetAsync(daurl)
 {
-    var res = 0;
-    for(var i = 0; i<obj.length; i += 1)
+    const response = await fetch(daurl);
+    if(response.ok)
     {
-        res += obj[i].n * obj[i].per;
-    }
-    return res;
-}
-
-function upClick(clicked)
-{
-    if(point >= calcPrice(clicked))
-    {
-        point -= calcPrice(clicked);
-        clicked.n += 1;
-        document.getElementById("perclick").innerHTML = `Per click: ${calcPer(clickList) + 1}`;
-        document.getElementById(clicked.button).innerHTML = `upgrade: per click stat - price: ${Math.floor(calcPrice(clicked))}`;
-    } else
-    {
-        document.getElementById('error').innerHTML = "Error:you dont have enough for that"
-        setTimeout(() => {document.getElementById('error').innerHTML = ""}, 3000);
+        return await response.json();
     }
 }
 
-function upAuto(clicked)
+function updateData()
 {
-    if(point >= calcPrice(clicked))
-    {
-        point -= calcPrice(clicked);
-        clicked.n += 1;
-        document.getElementById("prSecond").innerHTML = `Per second: ${calcPer(autoList)}`;
-        document.getElementById(clicked.button).innerHTML = `upgrade: auto income - price: ${Math.floor(calcPrice(clicked))}`;
-    } else
-    {
-        document.getElementById('error').innerHTML = "Error:you dont have enough for that"
-        setTimeout(() => {document.getElementById('error').innerHTML = ""}, 3000);
-    }
+    fetch("/api/update").then((res) => {
+        res.json().then((json) => {
+            point = json["points"];
+            document.getElementById("click1").innerHTML = `upgrade: per click stat - price: ${Math.floor(json["click1p"])}`;
+            document.getElementById("click2").innerHTML = `upgrade: per click stat - price: ${Math.floor(json["click2p"])}`;
+            document.getElementById("auto1").innerHTML = `upgrade: auto income - price: ${Math.floor(json["auto1p"])}`;
+            document.getElementById("auto2").innerHTML = `upgrade: auto income - price: ${Math.floor(json["auto2p"])}`;
+            document.getElementById("perclick").innerHTML = `Per click: ${json["perClick"]}`;
+            document.getElementById("prSecond").innerHTML = `Per second: ${json["perSecond"]}`;
+        });
+    });
+
+    setTimeout(updateData, 10);
 }
+
+updateData()
 
 function main()
 {
-    point += calcPer(clickList) + 1;
-    document.getElementById("points").innerHTML = `Points: ${Math.floor(point)}`;
+    fetch('/api/click', {
+        method:  "POST",
+        headers: {"Content-Type": "application/json"},
+    })
 }
 
 function upgrade(n)
 {
-    switch(n)
-    {
-        case 0:
-            upClick(upgrades.click1);
-            break;
-        case 1:
-            upClick(upgrade.click2);
-            break;
-        case 2:
-            upAuto(upgrades.auto1);
-            break;
-        case 3:
-            upAuto(upgrades.auto2);
-            break;
-        default:
-            console.log('not cock');
-            break;
-    }
+    fetch('/api/upgrade', {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({"n": n}),
+    })
 }
 
 setInterval(function update()
 {
-    point += calcPer(autoList) / 100;
-    document.getElementById("points").innerHTML = `Points: ${Math.floor(point)}`;
+    document.getElementById("points").innerHTML = `Cum[mL]: ${Math.floor(point)}`;
 }, 10);
+
+setInterval(function auto(){
+    fetch("/api/auto", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+    })
+}, 1000);
