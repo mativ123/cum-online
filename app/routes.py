@@ -2,7 +2,7 @@ from flask import render_template, flash, redirect, url_for, request, jsonify
 from app import app, db
 from app.forms import LoginForm, RegistrationForm
 from flask_login import current_user, login_user, logout_user, login_required
-from app.models import User
+from app.models import User, Save
 from werkzeug.urls import url_parse
 from dataclasses import dataclass
 import threading
@@ -106,4 +106,14 @@ def upgrade():
 def auto():
     global points
     points += auto1.n * auto1.per + auto2.n * auto2.per
+    return jsonify({'success': True})
+
+@app.route('/api/save', methods=['POST'])
+def save():
+    db.session.execute("DELETE FROM Save WHERE user_id={}".format(current_user.get_id()))
+    save = Save(point=points, user=current_user)
+    db.session.add(save)
+    db.session.commit()
+    for point in db.session.execute("SELECT point FROM Save ORDER BY point DESC").all():
+        print(point[0])
     return jsonify({'success': True})

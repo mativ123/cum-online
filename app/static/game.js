@@ -89,3 +89,12 @@ setInterval(function auto(){
         headers: {"Content-Type": "application/json"},
     })
 }, 1000);
+
+function save()
+{
+    console.log('din mor');
+    fetch("/api/save", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+    })
+}
