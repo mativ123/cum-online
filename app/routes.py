@@ -22,8 +22,8 @@ click2 = upgrades(0, 10, 100, 1.1)
 
 auto1 = upgrades(0, 1, 100, 1.2)
 auto2 = upgrades(0, 10, 3000, 1.5)
-points = 0
-score = 0
+points = {}
+score = {}
 
 @app.route('/')
 @app.route('/index', methods=['GET', 'POST'])
@@ -31,8 +31,8 @@ score = 0
 def index():
     global points
     try:
-        points = db.session.execute("SELECT point FROM Save WHERE user_id={}".format(current_user.get_id())).all()[0][0]
-        score  = db.session.execute("SELECT score FROM Save WHERE user_id={}".format(current_user.get_id())).all()[0][0]
+        points[current_user.get_id()] = db.session.execute("SELECT point FROM Save WHERE user_id={}".format(current_user.get_id())).all()[0][0]
+        score[current_user.get_id()]  = db.session.execute("SELECT score FROM Save WHERE user_id={}".format(current_user.get_id())).all()[0][0]
     except:
         print(f"new user: {db.session.execute(f'SELECT username FROM User WHERE id={current_user.get_id()}')}!!!")
     return render_template('index.html', title='Home')
@@ -87,7 +87,7 @@ def leaderboard():
 @app.route('/api/update')
 def updateData():
     return jsonify({
-        "points":    points,
+        "points":    points[current_user.get_id()],
         "click1p":   click1.calcPrice(),
         "click2p":   click2.calcPrice(),
         "auto1p":    auto1.calcPrice(),
@@ -100,25 +100,25 @@ def updateData():
 def click():
     global points
     global score
-    points += click1.n * click1.per + click2.n * click2.per + 1
-    score  += click1.n * click1.per + click2.n * click2.per + 1
+    points[current_user.get_id()] += click1.n * click1.per + click2.n * click2.per + 1
+    score[current_user.get_id()]  += click1.n * click1.per + click2.n * click2.per + 1
     return jsonify({'success': True})
 
 @app.route('/api/upgrade', methods=['POST'])
 def upgrade():
     global points
     print(request.json['n'])
-    if request.json['n'] == 0 and points >= click1.calcPrice():
-        points -= click1.calcPrice()
+    if request.json['n'] == 0 and points[current_user.get_id()] >= click1.calcPrice():
+        points[current_user.get_id()] -= click1.calcPrice()
         click1.n += 1
-    elif request.json['n'] == 1 and points >= click2.calcPrice():
-        points -= click2.calcPrice()
+    elif request.json['n'] == 1 and points[current_user.get_id()] >= click2.calcPrice():
+        points[current_user.get_id()] -= click2.calcPrice()
         click2.n += 1
-    elif request.json['n'] == 2 and points >= auto1.calcPrice():
-        points -= auto1.calcPrice()
+    elif request.json['n'] == 2 and points[current_user.get_id()] >= auto1.calcPrice():
+        points[current_user.get_id()] -= auto1.calcPrice()
         auto1.n += 1
-    elif request.json['n'] == 3 and points >= auto2.calcPrice():
-        points -= auto2.calcPrice()
+    elif request.json['n'] == 3 and points[current_user.get_id()] >= auto2.calcPrice():
+        points[current_user.get_id()] -= auto2.calcPrice()
         auto2.n += 1
     return jsonify({'success': True})
 
@@ -127,14 +127,15 @@ def auto():
     global points
     global score
 
-    points += auto1.n * auto1.per + auto2.n * auto2.per
-    score  += auto1.n * auto1.per + auto2.n * auto2.per
+    points[current_user.get_id()] += auto1.n * auto1.per + auto2.n * auto2.per
+    score[current_user.get_id()]  += auto1.n * auto1.per + auto2.n * auto2.per
     return jsonify({'success': True})
 
 @app.route('/api/save', methods=['POST'])
 def save():
-    db.session.execute("DELETE FROM Save WHERE user_id={}".format(current_user.get_id()))
-    save = Save(point=points, user=current_user, score=score)
-    db.session.add(save)
-    db.session.commit()
+    if current_user.get_id() != None:
+        db.session.execute("DELETE FROM Save WHERE user_id={}".format(current_user.get_id()))
+        save = Save(point=points[current_user.get_id()], user=current_user, score=score[current_user.get_id()])
+        db.session.add(save)
+        db.session.commit()
     return jsonify({'success': True})
