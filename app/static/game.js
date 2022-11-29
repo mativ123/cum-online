@@ -1,38 +1,3 @@
-var point = 0;
-
-var upgrades = {
-    click1: {
-        n: 0,
-        per: 1,
-        baseprice: 10,
-        pricescale: 1.1,
-        button: "click1",
-    },
-
-    click2: {
-        n: 0,
-        per: 100,
-        baseprice: 100,
-        pricescale: 1.1,
-        button: "click2",
-    },
-
-    auto1: {
-        n: 0,
-        per: 1,
-        baseprice: 100,
-        pricescale: 1.2,
-        button: "auto1",
-    },
-
-    auto2: {
-        n: 0,
-        per: 10,
-        baseprice: 3000,
-        pricescale: 1.5,
-        button: "auto2",
-    },
-};
 async function httpGetAsync(daurl)
 {
     const response = await fetch(daurl);
@@ -46,7 +11,7 @@ function updateData()
 {
     fetch("/api/update").then((res) => {
         res.json().then((json) => {
-            point = json["points"];
+            document.getElementById("points").innerHTML = `Cum[mL]: ${Math.floor(json["points"])}`;
             document.getElementById("click1").innerHTML = `upgrade: per click stat - price: ${Math.floor(json["click1p"])}`;
             document.getElementById("click2").innerHTML = `upgrade: per click stat - price: ${Math.floor(json["click2p"])}`;
             document.getElementById("auto1").innerHTML = `upgrade: auto income - price: ${Math.floor(json["auto1p"])}`;
@@ -78,11 +43,6 @@ function upgrade(n)
     })
 }
 
-setInterval(function update()
-{
-    document.getElementById("points").innerHTML = `Cum[mL]: ${Math.floor(point)}`;
-}, 10);
-
 setInterval(function auto(){
     fetch("/api/auto", {
         method: "POST",
@@ -90,11 +50,11 @@ setInterval(function auto(){
     })
 }, 1000);
 
-function save()
+setInterval(function save()
 {
-    console.log('din mor');
+    console.log("save :)");
     fetch("/api/save", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
     })
-}
+}, 5000);

@@ -23,14 +23,18 @@ click2 = upgrades(0, 10, 100, 1.1)
 auto1 = upgrades(0, 1, 100, 1.2)
 auto2 = upgrades(0, 10, 3000, 1.5)
 points = 0
+score = 0
 
 @app.route('/')
 @app.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
     global points
-    points = db.session.execute("SELECT point FROM Save WHERE user_id={}".format(current_user.get_id())).all()[0][0]
-    print(points)
+    try:
+        points = db.session.execute("SELECT point FROM Save WHERE user_id={}".format(current_user.get_id())).all()[0][0]
+        score  = db.session.execute("SELECT score FROM Save WHERE user_id={}".format(current_user.get_id())).all()[0][0]
+    except:
+        print(f"new user: {db.session.execute(f'SELECT username FROM User WHERE id={current_user.get_id()}')}!!!")
     return render_template('index.html', title='Home')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -71,10 +75,14 @@ def register():
 
 @app.route('/leaderboard', methods=['POST', 'GET'])
 def leaderboard():
-    scores = {}
-    for point in db.session.execute("SELECT * FROM Save ORDER BY point DESC").all():
-        scores[db.session.execute("SELECT username FROM User WHERE id={}".format(point[2])).all()[0][0]] = point[1]
-    return render_template("leaderboard.html", title="leaderboard", scores=scores)
+    scores = {
+        "placeholder": 69420,
+        "dinmor": 42069,
+    }
+    for userScore in db.session.execute("SELECT * FROM Save ORDER BY score DESC").all():
+        scores[db.session.execute("SELECT username FROM User WHERE id={}".format(userScore[2])).all()[0][0]] = round(userScore[3])
+    cUser = db.session.execute("SELECT username FROM User WHERE id={}".format(current_user.get_id())).all()[0][0]
+    return render_template("leaderboard.html", title="leaderboard", scores=scores, cUser=cUser)
 
 @app.route('/api/update')
 def updateData():
@@ -91,7 +99,9 @@ def updateData():
 @app.route('/api/click', methods=['POST'])
 def click():
     global points
+    global score
     points += click1.n * click1.per + click2.n * click2.per + 1
+    score  += click1.n * click1.per + click2.n * click2.per + 1
     return jsonify({'success': True})
 
 @app.route('/api/upgrade', methods=['POST'])
@@ -115,13 +125,16 @@ def upgrade():
 @app.route('/api/auto', methods=['POST'])
 def auto():
     global points
+    global score
+
     points += auto1.n * auto1.per + auto2.n * auto2.per
+    score  += auto1.n * auto1.per + auto2.n * auto2.per
     return jsonify({'success': True})
 
 @app.route('/api/save', methods=['POST'])
 def save():
     db.session.execute("DELETE FROM Save WHERE user_id={}".format(current_user.get_id()))
-    save = Save(point=points, user=current_user)
+    save = Save(point=points, user=current_user, score=score)
     db.session.add(save)
     db.session.commit()
     return jsonify({'success': True})
