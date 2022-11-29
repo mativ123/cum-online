@@ -66,6 +66,14 @@ def register():
         return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
 
+@app.route('/leaderboard', methods=['POST', 'GET'])
+def leaderboard():
+    scores = {}
+    for point in db.session.execute("SELECT * FROM Save ORDER BY point DESC").all():
+        scores.[db.session.execute("SELECT username FROM User WHERE id={}".format(point[2])).all()] = point
+    print(scores)
+    return render_template("leaderboard.html", title="leaderboard", scores=scores, players=players)
+
 @app.route('/api/update')
 def updateData():
     return jsonify({
@@ -114,6 +122,4 @@ def save():
     save = Save(point=points, user=current_user)
     db.session.add(save)
     db.session.commit()
-    for point in db.session.execute("SELECT point FROM Save ORDER BY point DESC").all():
-        print(point[0])
     return jsonify({'success': True})

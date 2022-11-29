@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block content %}
+{% for score, player in scores, players %}
+<h2>{{ player }}: {{ score }}</h2>
+{% endfor %}
+{% endblock %}
