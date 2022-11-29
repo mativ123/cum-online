@@ -28,6 +28,9 @@ points = 0
 @app.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
+    global points
+    points = db.session.execute("SELECT point FROM Save WHERE user_id={}".format(current_user.get_id())).all()[0][0]
+    print(points)
     return render_template('index.html', title='Home')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -70,9 +73,8 @@ def register():
 def leaderboard():
     scores = {}
     for point in db.session.execute("SELECT * FROM Save ORDER BY point DESC").all():
-        scores.[db.session.execute("SELECT username FROM User WHERE id={}".format(point[2])).all()] = point
-    print(scores)
-    return render_template("leaderboard.html", title="leaderboard", scores=scores, players=players)
+        scores[db.session.execute("SELECT username FROM User WHERE id={}".format(point[2])).all()[0][0]] = point[1]
+    return render_template("leaderboard.html", title="leaderboard", scores=scores)
 
 @app.route('/api/update')
 def updateData():
