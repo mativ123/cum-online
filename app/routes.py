@@ -35,6 +35,8 @@ def index():
         score[current_user.get_id()]  = db.session.execute("SELECT score FROM Save WHERE user_id={}".format(current_user.get_id())).all()[0][0]
     except:
         print(f"new user: {db.session.execute(f'SELECT username FROM User WHERE id={current_user.get_id()}')}!!!")
+        points[current_user.get_id()] = 0
+        score[current_user.get_id()] = 0
     return render_template('index.html', title='Home')
 
 @app.route('/login', methods=['GET', 'POST'])
