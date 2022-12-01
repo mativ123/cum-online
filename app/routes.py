@@ -34,7 +34,7 @@ auto2  = {}
 @login_required
 def index():
     global points
-    if(db.session.execute("SELECT click1 FROM Save WHERE user_id={}".format(current_user.get_id())).all()[0][0] != None):
+    if User.query.join(User.save, aliased=True).filter_by(id=1).all() != []:
         points[current_user.get_id()] = db.session.execute("SELECT point FROM Save WHERE user_id={}".format(current_user.get_id())).all()[0][0]
         score[current_user.get_id()]  = db.session.execute("SELECT score FROM Save WHERE user_id={}".format(current_user.get_id())).all()[0][0]
         click1[current_user.get_id()] = upgrades(db.session.execute("SELECT click1 FROM Save WHERE user_id={}".format(current_user.get_id())).all()[0][0], 1,  10,   1.1)
@@ -89,10 +89,7 @@ def register():
 
 @app.route('/leaderboard', methods=['POST', 'GET'])
 def leaderboard():
-    scores = {
-        "placeholder": 69420,
-        "dinmor": 42069,
-    }
+    scores = {}
     for userScore in db.session.execute("SELECT * FROM Save ORDER BY score DESC").all():
         scores[db.session.execute("SELECT username FROM User WHERE id={}".format(userScore[2])).all()[0][0]] = round(userScore[3])
     cUser = db.session.execute("SELECT username FROM User WHERE id={}".format(current_user.get_id())).all()[0][0]
