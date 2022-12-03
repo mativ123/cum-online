@@ -88,6 +88,7 @@ def register():
     return render_template('register.html', title='Register', form=form)
 
 @app.route('/leaderboard', methods=['POST', 'GET'])
+@login_required
 def leaderboard():
     scores = {}
     for userScore in db.session.execute("SELECT * FROM Save ORDER BY score DESC").all():
