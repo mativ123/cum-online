@@ -11,9 +11,10 @@ html, body {
     display: flex;
     flex-flow: column nowrap;
     align-items: flex-start;
+    flex-grow: 1;
 }
 
-.click {
+.upgrape {
     aspect-ratio: 5 / 1;
     width: 20vw;
     background-color: #5fff4a;
@@ -23,11 +24,11 @@ html, body {
     border-radius: 5px;
 }
 
-.click:hover {
+.upgrape:hover {
     background-color: #73ff61;
 }
 
-.click:active {
+.upgrape:active {
     background-color: #83ff73;
 }
 
@@ -35,10 +36,22 @@ html, body {
     display: flex;
     flex-flow: row wrap;
     align-items: flex-start;
-    justify-content: start;
+    justify-content: space-between;
 }
 
 #points {
     font-size: 4em;
     padding: 0;
+}
+
+#click {
+    flex-grow: 1;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+}
+
+#click button {
+    aspect-ratio: 5 / 1;
+    width: 15vw;
 }

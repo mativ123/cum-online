@@ -18,9 +18,9 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 
 const click = [
-    {"id": 0, "price": 10,  "effect": 1},
-    {"id": 1, "price": 40,  "effect": 6},
-    {"id": 2, "price": 100, "effect": 20},
+    {"price": 10,  "effect": 1},
+    {"price": 40,  "effect": 6},
+    {"price": 100, "effect": 20},
 ];
 
 app.get("/", (req, res) => {
@@ -28,12 +28,24 @@ app.get("/", (req, res) => {
         console.log("init points");
         req.session.points = 0;
     }
+    if(req.session.click_scale == undefined) {
+        console.log("init click_scale");
+        req.session.click_scale = 1;
+    }
     res.render("index", {click: click, points: req.session.points});
 });
 
 app.post("/cum", (req, res) => {
-    req.session.points += req.body["n"];
+    req.session.points += req.session.click_scale;
     res.send({"n": req.session.points});
 });
+
+app.post("/upgrade", (req, res) => {
+    if(click[req.body["n"]]["price"] <= req.session.points) {
+        req.session.click_scale += click[req.body["n"]]["effect"];
+        req.session.points -= click[req.body["n"]]["price"];
+    }
+    res.send({"n": req.session.points});
+})
 
 app.listen(process.env.PORT || 5000, () => console.log(`cum on 5000`));
