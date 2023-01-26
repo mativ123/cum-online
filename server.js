@@ -33,8 +33,7 @@ app.get("/", (req, res) => {
 
 app.post("/cum", (req, res) => {
     req.session.points += req.body["n"];
-    console.log(req.session.points);
-    res.send({"success": true});
+    res.send({"n": req.session.points});
 });
 
 app.listen(process.env.PORT || 5000, () => console.log(`cum on 5000`));
