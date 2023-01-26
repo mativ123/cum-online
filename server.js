@@ -1,9 +1,10 @@
-var express = require("express");
-var cookieParser = require("cookie-parser");
-var session = require("express-session");
-var bodyParser = require('body-parser');
+const express = require("express");
+const cookieParser = require("cookie-parser");
+const session = require("express-session");
+const bodyParser = require('body-parser');
+const sqlite3 = require('sqlite3').verbose();
 
-var app = express();
+const app = express();
 
 app.set("view engine", "ejs");
 
@@ -16,6 +17,13 @@ app.use(session({
 }));
 app.use(cookieParser());
 app.use(bodyParser.json());
+
+let db = new sqlite3.Database("./data", (err) => {
+    if(err) {
+        throw err;
+    }
+    console.log("connected");
+});
 
 const click = [
     {"price": 10,  "effect": 1},
@@ -46,6 +54,23 @@ app.post("/upgrade", (req, res) => {
         req.session.points -= click[req.body["n"]]["price"];
     }
     res.send({"n": req.session.points});
-})
+});
+
+app.post("/sqtest", (req, res) => {
+    db.run("INSERT INTO User (username) VALUES (?)", ["balls"], (err) => {
+        if(err) {
+            throw err;
+        }
+    });
+    db.all("SELECT * FROM User WHERE username =?", ["balls"], (err, rows) => {
+        if(err){
+            throw err;
+        }
+        rows.forEach((row) => {
+            console.log(row);
+        });
+    });
+    res.send({"sus": "very"});
+});
 
 app.listen(process.env.PORT || 5000, () => console.log(`cum on 5000`));

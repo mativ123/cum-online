@@ -21,3 +21,11 @@ function upgrade(n) {
             document.getElementById("points").innerHTML = data["n"];
         });
 }
+
+function sql() {
+    fetch('/sqtest', {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({"message": "din mor"}),
+    });
+}
