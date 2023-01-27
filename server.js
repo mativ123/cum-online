@@ -16,6 +16,7 @@ app.use(session({
 }));
 app.use(cookieParser());
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 let db = new sqlite3.Database("./data", (err) => {
     if(err) {
@@ -44,6 +45,22 @@ app.get("/", (req, res) => {
 
 app.get("/login", (req, res) => {
     res.render("login", {});
+});
+
+app.post("/login", (req, res) => {
+    var new_user = true;
+    db.all("SELECT username FROM User", (err, rows) => {
+        if(err){
+            throw err;
+        }
+        rows.every((row) => {
+            if(row.username == req.body.username) {
+                new_user = false;
+                return false;
+            }
+        });
+    });
+    res.redirect("/");
 });
 
 app.post("/cum", (req, res) => {
@@ -77,3 +94,6 @@ app.post("/sqtest", (req, res) => {
 });
 
 app.listen(process.env.PORT || 5000, () => console.log(`cum on 5000`));
+
+function checkUser(name) {
+}
