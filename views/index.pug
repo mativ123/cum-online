@@ -1,0 +1,17 @@
+extends base.pug
+
+block body
+    h1 Cum Game
+    div(id="game")
+        div(id="upgrades")
+            each up, i in click
+                button(class="upgrape" onclick=`upgrade(${i})`)
+                    p= i + 1
+                    p= up["price"]
+        div(id="click")
+            p(id="points")= points
+            button(onclick="cum()") cum
+    button(onclick="sql()") sql test
+
+block scripts
+    script(src="js/ev.js")

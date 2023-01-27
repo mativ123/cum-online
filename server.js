@@ -6,14 +6,13 @@ const sqlite3 = require('sqlite3').verbose();
 
 const app = express();
 
-app.set("view engine", "ejs");
+app.set("view engine", "pug");
 
 app.use(express.static("public"));
 app.use(session({
     secret: "dinMOR69420838847jnkfj",
     saveUninitialized: true,
     resave: false,
-    cookie: {maxAge: 60000},
 }));
 app.use(cookieParser());
 app.use(bodyParser.json());
@@ -43,6 +42,10 @@ app.get("/", (req, res) => {
     res.render("index", {click: click, points: req.session.points});
 });
 
+app.get("/login", (req, res) => {
+    res.render("login", {});
+});
+
 app.post("/cum", (req, res) => {
     req.session.points += req.session.click_scale;
     res.send({"n": req.session.points});
@@ -57,12 +60,12 @@ app.post("/upgrade", (req, res) => {
 });
 
 app.post("/sqtest", (req, res) => {
-    db.run("INSERT INTO User (username) VALUES (?)", ["balls"], (err) => {
+    db.run("INSERT INTO User (username, password) VALUES (?,?)", ["balls", Buffer.from("12345678").toString('base64')], (err) => {
         if(err) {
             throw err;
         }
     });
-    db.all("SELECT * FROM User WHERE username =?", ["balls"], (err, rows) => {
+    db.all("SELECT * FROM User", (err, rows) => {
         if(err){
             throw err;
         }
