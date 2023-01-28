@@ -1,0 +1,12 @@
+extends base.pug
+
+block body
+    h1 Register
+    form(action="", method="post", class="form")
+        input(type="text", name="username", placeholder="Username")
+        br
+        input(type="password", name="pass", placeholder="Password")
+        br
+        input(type="password", name="conf_pass", placeholder="Confirm password")
+        br
+        input(type="submit", value="send")

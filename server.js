@@ -3,6 +3,7 @@ const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const bodyParser = require('body-parser');
 const sqlite3 = require('sqlite3').verbose();
+const bcrypt = require("bcrypt");
 
 const app = express();
 
@@ -17,6 +18,8 @@ app.use(session({
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+const salt = "$2b$10$O3vN7ezQgxet83d0kuuU3O";
 
 let db = new sqlite3.Database("./data", (err) => {
     if(err) {
@@ -33,12 +36,13 @@ const click = [
 
 app.get("/", (req, res) => {
     if(req.session.points == undefined) {
-        console.log("init points");
         req.session.points = 0;
     }
     if(req.session.click_scale == undefined) {
-        console.log("init click_scale");
         req.session.click_scale = 1;
+    }
+    if(req.session.logged_in == undefined) {
+        req.session.logged_in = false;
     }
     res.render("index", {click: click, points: req.session.points});
 });
@@ -48,19 +52,40 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-    var new_user = true;
+    res.redirect("/");
+});
+
+app.get("/register", (req, res) => {
+    res.render("register.pug", {});
+})
+
+app.post("/register", (req, res) => {
     db.all("SELECT username FROM User", (err, rows) => {
         if(err){
             throw err;
         }
         rows.every((row) => {
             if(row.username == req.body.username) {
-                new_user = false;
+                res.redirect("/register");
                 return false;
+            }
+            if(req.body.pass == req.body.conf_pass) {
+                bcrypt.hash(req.body.pass, salt, (err, hash) => {
+                    if(err) {
+                        throw err;
+                    }
+                    db.run("INSERT INTO User (username, password) VALUES (?,?)", [req.body.username, hash], (err) => {
+                        if(err) {
+                            throw err;
+                        }
+                    });
+                });
+                res.redirect("/login");
+            } else {
+                res.redirect("/register");
             }
         });
     });
-    res.redirect("/");
 });
 
 app.post("/cum", (req, res) => {
@@ -77,11 +102,6 @@ app.post("/upgrade", (req, res) => {
 });
 
 app.post("/sqtest", (req, res) => {
-    db.run("INSERT INTO User (username, password) VALUES (?,?)", ["balls", Buffer.from("12345678").toString('base64')], (err) => {
-        if(err) {
-            throw err;
-        }
-    });
     db.all("SELECT * FROM User", (err, rows) => {
         if(err){
             throw err;
@@ -94,6 +114,3 @@ app.post("/sqtest", (req, res) => {
 });
 
 app.listen(process.env.PORT || 5000, () => console.log(`cum on 5000`));
-
-function checkUser(name) {
-}
