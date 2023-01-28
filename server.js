@@ -44,7 +44,17 @@ app.get("/", (req, res) => {
     var username = "not logged in";
     if(req.session.user != undefined) {
         username = req.session.user;
+        db.all("SELECT points FROM Save WHERE user=?", [req.session.user], (err, rows) => {
+            if(err) {
+                throw err;
+            }
+            rows.forEach((row) => {
+                console.log(`${req.session.points} = ${row.points}`);
+                req.session.points = row.points;
+            });
+        });
     }
+    console.log(req.session.points);
     res.render("index", {click: click, points: req.session.points, username: username});
 });
 
@@ -103,6 +113,11 @@ app.post("/register", (req, res) => {
                             throw err;
                         }
                     });
+                    db.run("INSERT INTO Save(user) VALUES (?)", [req.body.username], (err) => {
+                        if(err) {
+                            throw err;
+                        }
+                    });
                 });
                 should_run = false;
                 res.redirect("/login");
@@ -115,6 +130,11 @@ app.post("/register", (req, res) => {
 
 app.post("/cum", (req, res) => {
     req.session.points += req.session.click_scale;
+    db.run("UPDATE Save SET points=? WHERE user=?", [req.session.points, req.session.user], (err) => {
+        if(err) {
+            throw err;
+        }
+    })
     res.send({"n": req.session.points});
 });
 
