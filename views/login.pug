@@ -3,9 +3,9 @@ extends base.pug
 block body
     h1 login
     form(action="", method="post", class="form")
-        input(type="text", name="username", placeholder="Username")
+        input(type="text", name="username", placeholder="Username", required)
         br
-        input(type="password", name="password", placeholder="Password")
+        input(type="password", name="pass", placeholder="Password", required)
         br
         input(type="submit", value="send")
     a(href="/register") New user? register here

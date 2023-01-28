@@ -41,10 +41,11 @@ app.get("/", (req, res) => {
     if(req.session.click_scale == undefined) {
         req.session.click_scale = 1;
     }
-    if(req.session.logged_in == undefined) {
-        req.session.logged_in = false;
+    var username = "not logged in";
+    if(req.session.user != undefined) {
+        username = req.session.user;
     }
-    res.render("index", {click: click, points: req.session.points});
+    res.render("index", {click: click, points: req.session.points, username: username});
 });
 
 app.get("/login", (req, res) => {
@@ -52,7 +53,29 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-    res.redirect("/");
+    db.all("SELECT * FROM User", (err, rows) => {
+        if(err) {
+            throw err;
+        }
+        var should_run = true;
+        rows.forEach((row, key, arr) => {
+            if(should_run) {
+                bcrypt.compare(req.body.pass, row.password, (err, result) => {
+                    if(err) {
+                        throw err;
+                    }
+                    if(result && req.body.username == row.username) {
+                        req.session.user = row.username;
+                        should_run = false;
+                        res.redirect("/");
+                    }
+                });
+                if(arr.length == key) {
+                    res,redirect("/login");
+                }
+            }
+        });
+    });
 });
 
 app.get("/register", (req, res) => {
@@ -64,12 +87,13 @@ app.post("/register", (req, res) => {
         if(err){
             throw err;
         }
-        rows.every((row) => {
-            if(row.username == req.body.username) {
+        var should_run = true;
+        rows.forEach((row) => {
+            if(row.username == req.body.username && should_run) {
                 res.redirect("/register");
-                return false;
+                should_run = false;
             }
-            if(req.body.pass == req.body.conf_pass) {
+            if(req.body.pass == req.body.conf_pass && should_run) {
                 bcrypt.hash(req.body.pass, salt, (err, hash) => {
                     if(err) {
                         throw err;
@@ -80,8 +104,9 @@ app.post("/register", (req, res) => {
                         }
                     });
                 });
+                should_run = false;
                 res.redirect("/login");
-            } else {
+            } else if(should_run) {
                 res.redirect("/register");
             }
         });

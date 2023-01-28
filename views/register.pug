@@ -3,10 +3,10 @@ extends base.pug
 block body
     h1 Register
     form(action="", method="post", class="form")
-        input(type="text", name="username", placeholder="Username")
+        input(type="text", name="username", placeholder="Username", required)
         br
-        input(type="password", name="pass", placeholder="Password")
+        input(type="password", name="pass", placeholder="Password", required)
         br
-        input(type="password", name="conf_pass", placeholder="Confirm password")
+        input(type="password", name="conf_pass", placeholder="Confirm password", required)
         br
         input(type="submit", value="send")
