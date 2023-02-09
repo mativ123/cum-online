@@ -35,13 +35,9 @@ const click = [
 ];
 
 app.get("/", (req, res) => {
-    if(req.session.points == undefined) {
-        req.session.points = 0;
-    }
     if(req.session.click_scale == undefined) {
         req.session.click_scale = 1;
     }
-    var username = "not logged in";
     if(req.session.user != undefined) {
         username = req.session.user;
         db.all("SELECT points FROM Save WHERE user=?", [req.session.user], (err, rows) => {
@@ -49,13 +45,12 @@ app.get("/", (req, res) => {
                 throw err;
             }
             rows.forEach((row) => {
-                console.log(`${req.session.points} = ${row.points}`);
-                req.session.points = row.points;
+                res.render("index", {click: click, points: row.points, username: req.session.user});
             });
         });
+    } else {
+        res.render("index", {click: click, points: 0, username: "not logged in"});
     }
-    console.log(req.session.points);
-    res.render("index", {click: click, points: req.session.points, username: username});
 });
 
 app.get("/login", (req, res) => {
@@ -129,13 +124,22 @@ app.post("/register", (req, res) => {
 });
 
 app.post("/cum", (req, res) => {
-    req.session.points += req.session.click_scale;
-    db.run("UPDATE Save SET points=? WHERE user=?", [req.session.points, req.session.user], (err) => {
+    db.get("SELECT points FROM Save WHERE user=?", [req.session.user], (err, row) => {
         if(err) {
             throw err;
         }
+        db.run("UPDATE Save SET points=? WHERE user=?", [row.points += req.session.click_scale, req.session.user], (err) => {
+            if(err) {
+                throw err;
+            }
+        });
+    });
+    db.get("SELECT points FROM Save WHERE user=?", [req.session.user], (err, row) => {
+        if(err) {
+            throw err;
+        }
+        res.send({"n": row.points += req.session.click_scale});
     })
-    res.send({"n": req.session.points});
 });
 
 app.post("/upgrade", (req, res) => {
