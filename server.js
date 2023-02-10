@@ -14,6 +14,7 @@ app.use(session({
     secret: "dinMOR69420838847jnkfj",
     saveUninitialized: true,
     resave: false,
+    cookie: {maxAge: 999999999 * 999999999}
 }));
 app.use(cookieParser());
 app.use(bodyParser.json());
@@ -133,21 +134,42 @@ app.post("/cum", (req, res) => {
                 throw err;
             }
         });
+        res.send({"n": row.points});
     });
+});
+
+app.post("/upgrade", (req, res) => {
+    console.log("poopy");
     db.get("SELECT points FROM Save WHERE user=?", [req.session.user], (err, row) => {
         if(err) {
             throw err;
         }
-        res.send({"n": row.points += req.session.click_scale});
-    })
-});
-
-app.post("/upgrade", (req, res) => {
-    if(click[req.body["n"]]["price"] <= req.session.points) {
-        req.session.click_scale += click[req.body["n"]]["effect"];
-        req.session.points -= click[req.body["n"]]["price"];
-    }
-    res.send({"n": req.session.points});
+        if(row.points >= click[req.body["n"]]["price"]) {
+            db.get("SELECT upgrades FROM Save WHERE user=?", [req.session.user], (err, row) => {
+                if(err) {
+                    throw err;
+                }
+                const search = new RegExp(`click${req.body["n"]}`);
+                if(search.test(row.upgrades)) {
+                    const replace = new RegExp(`(?<=:click${req.body["n"]}=)(.*)(?=:)`);
+                    var out = row.upgrades.replace(replace, `${click[req.body["n"]].effect}`);
+                    console.log(out);
+                } else {
+                    db.run("UPDATE Save SET upgrades=? WHERE user=?", [`${row.upgrades}click${req.body["n"]}=${click[req.body["n"]].effect}:`, req.session.user], (err) => {
+                        if(err) {
+                            throw err;
+                        }
+                    });
+                }
+                db.all("SELECT * FROM Save", (err, rows) => {
+                    if(err) {
+                        throw err;
+                    }
+                    console.table(rows);
+                });
+            });
+        }
+    });
 });
 
 app.post("/sqtest", (req, res) => {
