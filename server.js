@@ -129,31 +129,51 @@ app.post("/cum", (req, res) => {
         if(err) {
             throw err;
         }
-        db.run("UPDATE Save SET points=? WHERE user=?", [row.points += req.session.click_scale, req.session.user], (err) => {
+        var point = row.points;
+        db.get("SELECT upgrades FROM Save WHERE user=?", [req.session.user], (err, row) => {
             if(err) {
                 throw err;
             }
+            var multiplier = 0;
+            row.upgrades.match(/(?<=:click.=).\d*(?=:)/g).forEach((item) => {
+                multiplier += Number(item);
+            });
+            db.run("UPDATE Save SET points=? WHERE user=?", [point += multiplier, req.session.user], (err) => {
+                if(err) {
+                    throw err;
+                }
+            });
         });
         res.send({"n": row.points});
     });
 });
 
 app.post("/upgrade", (req, res) => {
-    console.log("poopy");
     db.get("SELECT points FROM Save WHERE user=?", [req.session.user], (err, row) => {
         if(err) {
             throw err;
         }
         if(row.points >= click[req.body["n"]]["price"]) {
+            db.run("UPDATE Save SET points=? WHERE user=?", [row.points - click[req.body["n"]].price, req.session.user], (err) => {
+                if(err) {
+                    throw err;
+                }
+            });
             db.get("SELECT upgrades FROM Save WHERE user=?", [req.session.user], (err, row) => {
                 if(err) {
                     throw err;
                 }
                 const search = new RegExp(`click${req.body["n"]}`);
                 if(search.test(row.upgrades)) {
-                    const replace = new RegExp(`(?<=:click${req.body["n"]}=)(.*)(?=:)`);
-                    var out = row.upgrades.replace(replace, `${click[req.body["n"]].effect}`);
-                    console.log(out);
+                    const replace = new RegExp(`(?<=:click${req.body["n"]}=).\\d*(?=:)`);
+                    var up_n = row.upgrades.match(replace);
+                    var out = row.upgrades.replace(replace, `${click[req.body["n"]].effect + Number(up_n)}`);
+                    console.log(`${up_n} - ${out}`);
+                    db.run("UPDATE Save SET upgrades=? WHERE user=?", [out, req.session.user], (err) => {
+                        if(err) {
+                            throw err;
+                        }
+                    });
                 } else {
                     db.run("UPDATE Save SET upgrades=? WHERE user=?", [`${row.upgrades}click${req.body["n"]}=${click[req.body["n"]].effect}:`, req.session.user], (err) => {
                         if(err) {
@@ -169,6 +189,7 @@ app.post("/upgrade", (req, res) => {
                 });
             });
         }
+        res.send({"n": row.points});
     });
 });
 
