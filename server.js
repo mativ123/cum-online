@@ -124,6 +124,10 @@ app.post("/register", (req, res) => {
     });
 });
 
+app.get("/leaderboard", (req, res) => {
+    res.render
+})
+
 app.post("/cum", (req, res) => {
     db.get("SELECT points FROM Save WHERE user=?", [req.session.user], (err, row) => {
         if(err) {
